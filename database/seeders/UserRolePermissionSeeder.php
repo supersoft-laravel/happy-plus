@@ -80,23 +80,23 @@ class UserRolePermissionSeeder extends Seeder
             'first_name' => $superAdminUser->name,
         ]);
 
-        $adminUser = User::firstOrCreate([
-                            'email' => 'admin@gmail.com'
+        $simpleUser = User::firstOrCreate([
+                            'email' => 'user@gmail.com'
                         ], [
-                            'name' => 'Admin',
-                            'username' => 'admin',
-                            'email' => 'admin@gmail.com',
-                            'password' => Hash::make ('admin@gmail.com'),
+                            'name' => 'User',
+                            'username' => 'user',
+                            'email' => 'user@gmail.com',
+                            'password' => Hash::make ('12345678'),
                             'email_verified_at' => now(),
                         ]);
 
-        $adminUser->assignRole($adminRole);
+        $simpleUser->assignRole($userRole);
 
-        $adminUserProfile = $adminUser->profile()->firstOrCreate([
-            'user_id' => $adminUser->id,
+        $simpleUserProfile = $simpleUser->profile()->firstOrCreate([
+            'user_id' => $simpleUser->id,
         ], [
-            'user_id' => $adminUser->id,
-            'first_name' => $adminUser->name,
+            'user_id' => $simpleUser->id,
+            'first_name' => $simpleUser->name,
         ]);
     }
 }

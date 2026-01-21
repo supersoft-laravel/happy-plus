@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\API\Auth\ForgetPasswordController;
+use App\Http\Controllers\API\Auth\LoginController;
+use App\Http\Controllers\API\Auth\LogoutController;
+use App\Http\Controllers\API\Auth\RegisterController;
+use App\Http\Controllers\API\Frontend\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +19,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::post('/logout', [LogoutController::class, 'logout']);
+
+    //Resent OTP API
+    Route::get('/resend-otp', [LoginController::class, 'resend_otp']);
+    Route::post('/otp-verification', [LoginController::class, 'verify_otp']);
+
+    //Notifications API
+    Route::get('/notifications', [NotificationController::class, 'getUserNotifications']);
+
+    Route::post('/reset-password', [ForgetPasswordController::class, 'resetPassword']);
 });
+
+// Authentication Routes (Login and Register) for guests
+Route::post('/login', [LoginController::class, 'login_attempt']);
+Route::post('/register', [RegisterController::class, 'register_attempt']);
+Route::post('/forget-password', [ForgetPasswordController::class, 'forgetPassEmail']);

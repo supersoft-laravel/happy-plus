@@ -21,10 +21,8 @@ class LocaleMiddleware
     {
         if (Session::has('locale')) {
             $locale = Session::get('locale');
-            Log::info("Using session locale: " . $locale);
         } else {
             $locale = Helper::getDefaultLanguage();
-            Log::info("Using default locale: " . $locale);
         }
 
         App::setLocale($locale);
