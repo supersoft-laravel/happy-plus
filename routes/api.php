@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\API\Auth\FacebookController;
 use App\Http\Controllers\API\Auth\ForgetPasswordController;
+use App\Http\Controllers\API\Auth\GoogleController;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
@@ -40,3 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/login', [LoginController::class, 'login_attempt']);
 Route::post('/register', [RegisterController::class, 'register_attempt']);
 Route::post('/forget-password', [ForgetPasswordController::class, 'forgetPassEmail']);
+
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirectToFacebook']);
+Route::get('/auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
+
