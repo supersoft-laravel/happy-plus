@@ -50,17 +50,18 @@ class ForgetPasswordController extends Controller
 
             $token = $user->createToken($user->name, ['auth_token'])->plainTextToken;
 
-            $otp = '1234';
-            // do {
-            //     $otp = rand(1000, 9999);
-            // } while (User::where('email_otp', $otp)->exists());
+            do {
+                $otp = rand(1000, 9999);
+            } while (User::where('email_otp', $otp)->exists());
 
             // Save OTP to user record
             $user->email_otp = $otp;
             $user->save();
 
+            $subject = 'OTP to Reset Your Password';
+
             // ✅ Send OTP email
-            // Mail::to($user->email)->send(new ForgetPassOTPMail($user, $otp));
+            Mail::to($user->email)->send(new ForgetPassOTPMail($user, $otp, $subject));
 
             DB::commit();
 

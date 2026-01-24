@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -9,19 +10,15 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ForgetPassOTPMail extends Mailable
+class AdminUserRegistered extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;
-    public $otp;
-    public $subject;
 
-    public function __construct($user, $otp, $subject)
+    public function __construct(User $user)
     {
         $this->user = $user;
-        $this->otp = $otp;
-        $this->subject = $subject;
     }
 
     /**
@@ -30,7 +27,7 @@ class ForgetPassOTPMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->subject,
+            subject: 'New User Registered',
         );
     }
 
@@ -40,10 +37,9 @@ class ForgetPassOTPMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.forget-password-otp',
+            view: 'emails.admin-user-registered',
             with: [
                 'user' => $this->user,
-                'otp' => $this->otp,
             ]
         );
     }

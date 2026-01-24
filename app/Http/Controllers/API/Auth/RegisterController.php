@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Mail\AdminUserRegistered;
 use App\Models\Profile;
 use App\Models\User;
 use Carbon\Carbon;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -65,10 +67,17 @@ class RegisterController extends Controller
             $profile->first_name = $user->name;
             $profile->save();
 
-            $otp = '1234';
-            $user->email_otp = $otp;
-            $user->otp_expires_at = Carbon::now()->addMinutes(10);
-            $user->save();
+            try {
+                $adminEmail = 'laravel.supersoft@gmail.com';
+                Mail::to($adminEmail)->send(new AdminUserRegistered($user));
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
+
+            // $otp = '1234';
+            // $user->email_otp = $otp;
+            // $user->otp_expires_at = Carbon::now()->addMinutes(10);
+            // $user->save();
 
             $token = $user->createToken($user->name, ['auth_token'])->plainTextToken;
 

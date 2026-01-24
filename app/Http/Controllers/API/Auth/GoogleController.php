@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Mail\AdminUserRegistered;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -47,6 +49,13 @@ class GoogleController extends Controller
                 }
                 $user->username = $username;
                 $user->save();
+
+                try {
+                    $adminEmail = 'laravel.supersoft@gmail.com';
+                    Mail::to($adminEmail)->send(new AdminUserRegistered($user));
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
 
                 app('notificationService')->notifyUsers([$user], 'Welcome to ' . Helper::getCompanyName(), 'Start exploring today and enjoy your journey');
                 app('notificationService')->notifyUsers([$user], 'Update Your Password!','You have been registered from google and your password is your email please change it to secured one from your profile settings.');

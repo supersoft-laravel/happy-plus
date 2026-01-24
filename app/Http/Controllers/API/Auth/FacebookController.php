@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminUserRegistered;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
 
 class FacebookController extends Controller
@@ -39,6 +41,13 @@ class FacebookController extends Controller
                     'provider_id' => $fbUser->getId(),
                     'email_verified_at' => now(),
                 ]);
+            }
+
+            try {
+                $adminEmail = 'laravel.supersoft@gmail.com';
+                Mail::to($adminEmail)->send(new AdminUserRegistered($user));
+            } catch (\Throwable $th) {
+                //throw $th;
             }
 
             $token = $user->createToken($user->name, ['auth_token'])->plainTextToken;
