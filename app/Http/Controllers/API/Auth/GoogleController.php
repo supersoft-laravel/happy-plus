@@ -114,7 +114,10 @@ class GoogleController extends Controller
 
     public function GoogleLoginRegister(Request $request)
     {
-        Log::info('Request Data:', $request);
+        Log::info('Request Data:', [
+            'request' => $request->all(),
+            'headers' => $request->headers->all(),
+        ]);
         $request->validate([
             'id_token' => 'required|string'
         ]);
