@@ -45,7 +45,7 @@ Route::post('/forget-password', [ForgetPasswordController::class, 'forgetPassEma
 
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
-Route::get('auth/google/register', [GoogleController::class, 'GoogleLoginRegister']);
+Route::post('auth/google/register', [GoogleController::class, 'GoogleLoginRegister']);
 
 Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirectToFacebook']);
 Route::get('/auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
