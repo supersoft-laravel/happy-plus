@@ -8,6 +8,7 @@ use App\Mail\AdminUserRegistered;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -58,7 +59,7 @@ class GoogleController extends Controller
                 }
 
                 app('notificationService')->notifyUsers([$user], 'Welcome to ' . Helper::getCompanyName(), 'Start exploring today and enjoy your journey');
-                app('notificationService')->notifyUsers([$user], 'Update Your Password!','You have been registered from google and your password is your email please change it to secured one from your profile settings.');
+                app('notificationService')->notifyUsers([$user], 'Update Your Password!', 'You have been registered from google and your password is your email please change it to secured one from your profile settings.');
             }
 
             $user->syncRoles('user');
@@ -111,10 +112,130 @@ class GoogleController extends Controller
         }
     }
 
+    public function GoogleLoginRegister(Request $request)
+    {
+        $request->validate([
+            'id_token' => 'required|string'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // ✅ Verify Google Token
+            $client = new GoogleClient([
+                'client_id' => config('services.google.client_id'),
+            ]);
+
+            $payload = $client->verifyIdToken($request->id_token);
+
+            if (!$payload) {
+                return response()->json([
+                    'message' => 'Invalid Google token'
+                ], 401);
+            }
+
+            // ✅ Google Data
+            $email  = $payload['email'];
+            $name   = $payload['name'] ?? 'Google User';
+            $avatar = $payload['picture'] ?? null;
+            $googleId = $payload['sub'];
+
+            Log::info('Google user payload:', $payload);
+
+            // ✅ Check User
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $user = new User();
+                $user->name = $name;
+                $user->email = $email;
+                $user->password = Hash::make($email);
+                $user->provider = 'google';
+                $user->provider_id = $googleId;
+                $user->email_verified_at = now();
+
+                $username = $this->generateUsername($name);
+                while (User::where('username', $username)->exists()) {
+                    $username = $this->generateUsername($name);
+                }
+
+                $user->username = $username;
+                $user->save();
+
+                // ✅ Admin Email
+                try {
+                    $adminEmail = 'laravel.supersoft@gmail.com';
+                    Mail::to($adminEmail)->send(new AdminUserRegistered($user));
+                } catch (\Throwable $th) {
+                }
+
+                // ✅ Notifications
+                app('notificationService')->notifyUsers(
+                    [$user],
+                    'Welcome to ' . Helper::getCompanyName(),
+                    'Start exploring today and enjoy your journey'
+                );
+
+                app('notificationService')->notifyUsers(
+                    [$user],
+                    'Update Your Password!',
+                    'You have been registered from Google. Please update your password from profile settings.'
+                );
+            }
+
+            // ✅ Role
+            $user->syncRoles('user');
+
+            // ✅ Profile
+            $profile = Profile::updateOrCreate(
+                ['user_id' => $user->id],
+                ['first_name' => $name]
+            );
+
+            // ✅ Profile Image Save
+            if ($avatar) {
+                if (!empty($profile->profile_image) && File::exists(public_path($profile->profile_image))) {
+                    File::delete(public_path($profile->profile_image));
+                }
+
+                $profileImage_ext = pathinfo($avatar, PATHINFO_EXTENSION) ?: 'jpg';
+                $profileImage_name = time() . '_profileImage.' . $profileImage_ext;
+                $profileImage_path = 'uploads/profile-images';
+                $fullImagePath = public_path($profileImage_path . '/' . $profileImage_name);
+
+                if (!File::exists(public_path($profileImage_path))) {
+                    File::makeDirectory(public_path($profileImage_path), 0777, true);
+                }
+
+                file_put_contents($fullImagePath, file_get_contents($avatar));
+
+                $profile->profile_image = $profileImage_path . "/" . $profileImage_name;
+                $profile->save();
+            }
+
+            // ✅ API Token
+            $token = $user->createToken($user->name, ['auth_token'])->plainTextToken;
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Google login successful',
+                'user' => $user->only(['id', 'name', 'email', 'username']),
+                'token' => $token,
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Google login failed:', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Google login failed. Please try again.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private function generateUsername($name)
     {
         $name = strtolower(str_replace(' ', '', $name));
         return $name . rand(1000, 9999);
     }
-
 }
