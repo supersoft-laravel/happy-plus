@@ -49,4 +49,5 @@ Route::post('auth/google/register', [GoogleController::class, 'GoogleLoginRegist
 
 Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirectToFacebook']);
 Route::get('/auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
+Route::post('/auth/facebook/register', [FacebookController::class, 'facebookLoginRegister']);
 
