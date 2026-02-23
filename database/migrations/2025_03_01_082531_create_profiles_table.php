@@ -25,10 +25,8 @@ return new class extends Migration
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('profile_image')->nullable();
+            $table->string('gender')->nullable();
             $table->timestamp('dob')->nullable();
-            $table->foreignIdFor(Gender::class)->nullable()
-                ->constrained()
-                ->cascadeOnDelete();
             $table->foreignIdFor(MaritalStatus::class)->nullable()
                 ->constrained()
                 ->cascadeOnDelete();

@@ -7,6 +7,7 @@ use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\Frontend\NotificationController;
+use App\Http\Controllers\API\Frontend\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'getUserNotifications']);
 
     Route::post('/reset-password', [ForgetPasswordController::class, 'resetPassword']);
+
+    // User Profile API
+    Route::get('/profile', [ProfileController::class, 'getProfile']);
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile']);
+    Route::post('/profile/reset-password', [ProfileController::class, 'resetPassword']);
 });
 
 // Authentication Routes (Login and Register) for guests

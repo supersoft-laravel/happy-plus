@@ -12,7 +12,7 @@ class Profile extends Model
         'last_name',
         'profile_image',
         'dob',
-        'gender_id',
+        'gender',
         'marital_status_id',
         'language_id',
         'designation_id',
