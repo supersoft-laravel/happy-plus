@@ -28,12 +28,14 @@
         <li class="menu-header small">
             <span class="menu-header-text">{{__('Apps & Pages')}}</span>
         </li>
-        <li class="menu-item {{ request()->routeIs('dashboard.books.*') ? 'active' : '' }}">
-            <a href="{{ route('dashboard.books.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-book"></i>
-                <div>{{__('Books')}}</div>
-            </a>
-        </li>
+        @can(['view book'])
+            <li class="menu-item {{ request()->routeIs('dashboard.books.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.books.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-book"></i>
+                    <div>{{__('Books')}}</div>
+                </a>
+            </li>
+        @endcan
         @canany(['view user', 'view archived user'])
             <li class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') ? 'open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
