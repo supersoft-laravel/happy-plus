@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -12,7 +15,55 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('dashboard.index');
+        try {
+            $user = Auth::user();
+
+            // Base Query (Only role = user)
+            $usersQuery = User::role('user');
+
+            // Total Users (excluding soft deleted)
+            $totalUsers = (clone $usersQuery)->count();
+
+            // Active Users
+            $activeUsers = (clone $usersQuery)
+                ->where('is_active', 1)
+                ->count();
+
+            // Inactive Users
+            $inactiveUsers = (clone $usersQuery)
+                ->where('is_active', 0)
+                ->count();
+
+            // Archived Users (Soft Deleted)
+            $archivedUsers = User::onlyTrashed()
+                ->role('user')
+                ->count();
+
+            // New Users This Month
+            $monthlyUsers = (clone $usersQuery)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->count();
+
+            return view('dashboard.index', compact(
+                'totalUsers',
+                'activeUsers',
+                'inactiveUsers',
+                'archivedUsers',
+                'monthlyUsers'
+            ));
+
+        } catch (\Throwable $th) {
+
+            Log::error('Dashboard Index Failed', [
+                'error' => $th->getMessage()
+            ]);
+
+            return redirect()->back()->with(
+                'error',
+                "Something went wrong! Please try again later"
+            );
+        }
     }
 
     /**
